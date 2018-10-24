@@ -1,3 +1,6 @@
+spring:
+  application:
+    name: qy-config
 # 加解密根密码
 jasypt:
   encryptor:
