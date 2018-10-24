@@ -1,44 +1,21 @@
-#加密配置
+# 加解密根密码
 jasypt:
   encryptor:
-    password: lengleng
-
-server:
-  tomcat:
-    max-threads: 500 # Maximum amount of worker threads.
-    min-spare-threads: 50 # Minimum amount of worker threads
-
+    password: qyx #根密码
+# redis 相关
 spring:
   redis:
-    remote: false        #cachecloud 获取1
     host: 192.168.1.250
-    port: 6379
     password: cqqycti
-  rabbitmq:
-    host: 192.168.1.249
-    port: 5672
-    username: quanyu
-    password: 123456
-  http:
-    multipart:
-      max-file-size: 1000MB
-      max-request-size: 1000MB
+    port: 6379
+# 暴露监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
 
-redis:
-  cache:
-    expiration: 3601
-
-ribbon:
-  eager-load:
-    enabled: true
-    clients: pig-auth,pig-upms-service
-  Httpclient:
-    enabled: false
-  OkHttp:
-    enabled: true
-  ReadTimeout: 10000
-  ConnectTimeout: 10000
-
+# feign 配置
 feign:
   hystrix:
     enabled: true
@@ -49,34 +26,76 @@ feign:
   client:
     config:
       feignName:
-        connectTimeout: 30000
-        readTimeout: 30000
+        connectTimeout: 10000
+        readTimeout: 10000
   compression:
     request:
       enabled: true
     response:
       enabled: true
-
+# hystrix If you need to use ThreadLocal bound variables in your RequestInterceptor`s
+# you will need to either set the thread isolation strategy for Hystrix to `SEMAPHORE or disable Hystrix in Feign.
 hystrix:
-  threadpool:
-    default:
-      coreSize: 500
-      maxQueueSize: 1000
-      queueSizeRejectionThreshold: 800
   command:
     default:
       execution:
         isolation:
+          strategy: SEMAPHORE
           thread:
             timeoutInMilliseconds: 60000
+  shareSecurityContext: true
 
-#监控短点配置
-management:
-  security:
-    enabled: false
-endpoints:
-  actuator:
-    enabled: true
-  shutdown:
-    enabled: false
+#请求处理的超时时间
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
 
+#mybaits-plus配置，修改主键类型，mapper.xml、type 别名等
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  global-config:
+    #主键类型  0:"数据库ID自增", 1:"用户输入ID",2:"全局唯一ID (数字类型唯一ID)", 3:"全局唯一ID UUID";
+    id-type: 0
+    #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
+    field-strategy: 1
+    #驼峰下划线转换
+    db-column-underline: true
+    #刷新mapper 调试神器
+    refresh-mapper: false
+    # 逻辑删除字段
+    logic-delete-value: 1
+    logic-not-delete-value: 0
+    #自定义SQL注入器
+    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+
+#swagger公共信息
+swagger:
+  title: Qyx Swagger API
+  description: 全宇宙最牛逼的Spring Cloud微服务开发脚手架
+  version: 1.6.2
+  license: Powered By Qyx
+  licenseUrl: https://qycti.com/
+  terms-of-service-url: https://qycti.com/
+  contact:
+    name: xxx
+    email: xxxxx@gmail.com
+    url: https://qycti.com/about.html
+  authorization:
+    name: Qyx OAuth
+    auth-regex: ^.*$
+    authorization-scope-list:
+      - scope: server
+        description: server all
+    token-url-list:
+      - ${security.auth.server}/token
+
+## spring security 配置
+security:
+  auth:
+    server: http://localhost:9999/auth/oauth
+  oauth2:
+    resource:
+      token-info-uri: ${security.auth.server}/check_token
